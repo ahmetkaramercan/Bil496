@@ -1,0 +1,196 @@
+{% extends "base.html" %} {% block title %} Hakkımızda {% endblock %}  {% block content %}
+
+<main class="content">
+  <div class="container p-0">
+		<h1 class="h3 mb-3">CHATBOT AI</h1>
+
+		<div class="card">
+			<div class="row g-0">
+				<div class="col-8 col-lg-5 col-xl-3 border-right bg-body-secondary">
+
+					<div class="px-4 d-none d-md-block ">
+						<div class="d-flex align-items-center">
+							<div class="flex-grow-1">
+								<input type="text" class="form-control my-3" placeholder="Search...">
+							</div>
+						</div>
+					</div>
+					{% for others in other_chats %}
+						<a href="#" class="list-group-item list-group-item-action border-0 bg-body-secondary">
+							<!-- <div class="badge bg-success float-right">5</div> -->
+							<div class="d-flex align-items-start">							
+								<div class="flex-grow-1 ml-3">
+									{{others.0}}
+									<div class="small"><span class="fas fa-circle chat-online"></span> {{others.1}}</div>
+								</div>
+							</div>
+						</a>
+					{% endfor %}
+
+					
+					<hr class="d-block d-lg-none mt-1 mb-0">
+				</div>
+                
+				<div class="col-12 col-lg-7 col-xl-9">
+					<div class="py-2 px-4 border-bottom d-none d-lg-block">
+
+						<div class="d-flex align-items-center py-1">
+							<div class="position-relative">
+								<img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimg.freepik.com%2Fvector-premium%2Fdoctor-robot-lindo-bata-blanca-juego-medicina-tecnologias-futuro-tratamiento-hospitalario-personaje_124715-101.jpg%3Fw%3D2000&f=1&nofb=1&ipt=5b5135a33b2272c54caa3405bd7267e4874f06da5d4a61425b71d8ca763d989a&ipo=images" class="rounded-circle mr-1" alt="Sharon Lessman" width="40" height="40">
+							</div>
+							<div class="flex-grow-1 pl-3 mx-3">
+								<strong>AI Chatbot</strong>
+								<div class="text-muted small"><em>Typing...</em></div>
+							</div>
+							<div>
+								<button class="btn btn-light border btn-lg px-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal feather-lg"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+							</div>
+						</div>
+					</div>
+
+					<div class="position-relative">
+						<div class="chat-messages p-4"  id = "chat-messages">
+
+							{% for chat in chats %}
+								{% if chat.0 == 0 %}
+									<div class="chat-message-left pb-4">
+										<div>
+											<img src="../static/profile_pics/ornek.png" class="rounded-circle mr-1" alt="Sharon Lessman" width="40" height="40">
+											<div class="text-muted small text-nowrap mt-2">2:34 am</div>
+										</div>
+										<div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
+											<div class="font-weight-bold mb-1">AI bot</div>
+											{{chat.1}}
+										</div>
+									</div>
+
+								{% else %}
+									<div class="chat-message-right mb-4">
+										<div>
+											<img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle mr-1" alt="Chris Wood" width="40" height="40">
+											<div class="text-muted small text-nowrap mt-2">2:35 am</div>
+										</div>
+										<div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
+											<div class="font-weight-bold mb-1">You</div>
+											{{chat.1}}
+										</div>
+									</div>
+
+								{% endif %}
+							{% endfor %}
+						</div>
+					</div>
+
+			
+					<div class="flex-grow-0 py-4 px-4 border-top bg-light">
+						<div class="input-group">
+						  <form class="col-12 d-flex" method="POST" id="MyForm" name="MyForm">
+							<input type="text" class="form-control" placeholder="Type your message" name="message" id="message">
+							<button class="btn btn-warning" type="submit">Send</button>
+						  </form>
+						</div>
+					</div>
+
+
+
+					<!-- <script>
+					window.onload = function() {
+						var chatBox = document.querySelector('.chat-messages');
+						chatBox.scrollTop = chatBox.scrollHeight;
+					};
+					</script> -->
+
+
+<script>
+	window.onload = function() {
+
+		var chatBox = document.querySelector('.chat-messages');
+		chatBox.scrollTop = chatBox.scrollHeight;
+
+		var form = document.getElementById('MyForm');
+		form.addEventListener('submit', function(e) {
+			e.preventDefault();
+
+			// Kullanıcının mesajını al ve sohbete ekle
+			var message = document.getElementById('message').value;
+			addMessageToChatUser(message);
+			form.querySelector('button[type="submit"]').disabled = true;
+
+			var formData = new FormData();
+			formData.append('message', message);
+
+			// AJAX ile asenkron POST isteği gönder
+			$.ajax({
+				url: "/send_message",
+				type: "POST",
+				data: formData,
+				processData: false, // FormData ile işlem yapılıyorsa bu opsiyon false olmalı
+				contentType: false, // FormData ile işlem yapılıyorsa bu opsiyon false olmalı
+				success: function(response) {
+					// Sunucudan gelen cevabı sohbete ekle
+					if(response.message) {
+						addMessageToChatAI(response.message);
+						form.querySelector('button[type="submit"]').disabled = false;
+					}
+				},
+				error: function(xhr, status, error) {
+					// Hata durumunda çalışacak kod
+					console.error("An error occurred: " + error);
+				}
+			});
+
+			// Mesaj gönderildikten sonra input alanını temizle
+			document.getElementById('message').value = '';
+		});
+	};
+
+
+	
+	function addMessageToChatAI(message) {
+		var chatMessage = `<div class="chat-message-left pb-4">
+			<div>
+				<img src="../static/profile_pics/ornek.png" class="rounded-circle mr-1" alt="Sharon Lessman" width="40" height="40">
+				<div class="text-muted small text-nowrap mt-2">2:34 am</div>
+			</div>
+			<div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
+				<div class="font-weight-bold mb-1">AI bot</div>
+				${message}
+			</div>
+		</div>`;
+
+		// Chat mesajlarının ekleneceği container'ı seç
+		var chatContainer = document.getElementById('chat-messages');
+		chatContainer.innerHTML += chatMessage;
+		chatContainer.scrollTop = chatContainer.scrollHeight;
+	}
+
+
+	function addMessageToChatUser(message) {
+		var chatMessage = `<div class="chat-message-right mb-4">
+			<div>
+				<img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle mr-1" alt="Chris Wood" width="40" height="40">
+				<div class="text-muted small text-nowrap mt-2">2:35 am</div>
+			</div>
+			<div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
+				<div class="font-weight-bold mb-1">You</div>
+				${message}
+			</div>
+		</div>`;
+
+		// Chat mesajlarının ekleneceği container'ı seç
+		var chatContainer = document.getElementById('chat-messages');
+		chatContainer.innerHTML += chatMessage;
+		chatContainer.scrollTop = chatContainer.scrollHeight;
+	}
+
+
+	</script>
+	
+
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
+
+{% endblock %}
