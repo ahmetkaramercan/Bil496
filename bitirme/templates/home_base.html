@@ -45,36 +45,42 @@
 
 
 
-        <!--<header class="p-4 mb-3 border-bottom bg-dark text-white">
+    <header class="p-4 mb-3 border-bottom bg-dark text-white">
         <div class="container">
             <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
 
-                <a href="/" style="font-size: 25px;"
-                    class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">Procurement<span
-                        style="font-weight: bold; font-size: 30px;" class="text-warning">Analysis</span></a>
-
+                <a href="/" style="font-size: 35px;"
+                    class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">ETÜ<span
+                    style="font-weight: bold; font-size: 27px;" class="text-warning">SAĞLIK</span></a>
                         
                 <div class="ml-5 px-3 d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-                    Ana Sayfa
+                    
                 </div>
 
+                
                 <ul class=" text-warning nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                    <li><a href="/" class="nav-link px-2 text-white">Ana Sayfa</a></li>
+                    <li><a href="/"  style="font-size: 20px;" class="nav-link nav-item px-4 text-white">Ana Sayfa</a></li>
 
-
-                    <li><a href="/kurslarım" class="nav-link px-2 text-warning">About</a></li>
+                    <li><a href="/about"  style="font-size: 20px;" class="nav-link nav-item px-4 text-warning">Hakkımızda</a></li>
 
                 </ul>
+                
 
                 <div class="dropdown text-right">
-                    baba sayfa
                     
                     <a href="#" class="d-block link-warning text-decoration-none dropdown-toggle " id="dropdownUser1"
                         data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="../static/profile_pics/{{current_user.image_file}}" alt="mdo" width="45" height="45"
+                            class="rounded-circle">
                     </a>
                     <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser1">
+                        <li>
+                            <p class="dropdown-item"> {{current_user.first_name}} {{current_user.last_name}}</p>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
             
-                        <li><a class="dropdown-item" href="/kurslarım">Kurslarım</a></li>
                         <li><a class="dropdown-item" href="/profil_ayarları">Ayarlar</a></li>
                         <li>
                             <hr class="dropdown-divider">
@@ -85,7 +91,7 @@
             </div>
         </div>
     </header>
--->
+
     {% block content %}{% endblock %}
 
     <hr class="featurette-divider bg-dark mt-5">
