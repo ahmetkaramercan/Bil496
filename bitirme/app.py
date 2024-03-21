@@ -1,6 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 import requests
 import time
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="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"
+)
 
 
 app = Flask(__name__)
@@ -31,10 +36,19 @@ def home():
 def send_message():
     message_text = request.form['message']
     print(message_text)
-    time.sleep(5)
-    # Burada GPT-3'e mesaj gönderme işlemini yapın
-    # Örnek olarak sabit bir cevap döndürüldü
-    response_message = "Bu bir örnek cevaptır."
+    prompt = message_text
+    chat_completion = client.chat.completions.create(
+        messages = [
+            {
+                "role":"user",
+             "content":prompt
+             },    
+        ],
+        model="gpt-3.5-turbo"
+    )
+    #time.sleep(5)
+    
+    response_message = chat_completion.choices[0].message.content
     return jsonify({"message": response_message})
     
 
