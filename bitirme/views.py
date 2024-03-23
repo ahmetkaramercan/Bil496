@@ -17,17 +17,16 @@ def about():
     return render_template("about.html", user=current_user)
 
 
-@views.route("/")
+@views.route("/", methods=['GET', 'POST'])
 @login_required
 def home():
+    print(current_user)
     message_text = None
-    """if request.method == 'POST':  # chatlar arası dolaşmanın yapılacağı zaman açılcak
-        message_text = request.form.get('message')
-        print(message_text)
+    if request.method == 'POST': 
+        chat_id = request.form.get('chat_id')
+        print(chat_id)
         
         #gpt den cevap"""
-    
-
     # SQL sorgusu
     """chat_history = db.engine.execute("SELECT Chat.id,baslik,date,kisa_aciklama, (chat_history (tanımlamadık))"+
             " FROM Chat, User" +
@@ -41,20 +40,21 @@ def home():
     chat_history = [[0, "selam nasılsın ? Nasıl yardımcı olabilirim ?"], [1,"Saçma sapan cümleler kur"], [0, "cevap 1 asdasdadasdadsadasdasasdasdasdasdasdas asd asd asd as dasdasdasda sdas dasd asdadasdasdasd"], [1, "Teşekkür ederim"]]
     if message_text != None:
         chat_history.append([0, message_text + "  senden naber"])
-    other_chats = [["Hava durumu", "bugünün verilerine göre hava durumu ..."],["chat 2", "asdasd asd.as.das as..."],["chat 3", "cqwdasd asda sdasd asd..."]]
+    other_chats = [[4,"Hava durumu", "bugünün verilerine göre hava durumu ..."],[5,"chat 2", "asdasd asd.as.das as..."],[6,"chat 3", "cqwdasd asda sdasd asd..."]]
 
-    return render_template("index.html", user=current_user, chats = chat_history, other_chats = other_chats)
+    return render_template("index.html", user=current_user, chat_id= 3, chats = chat_history, other_chats = other_chats)
 
 
 @views.route("/send_message", methods=['POST'])
 @login_required
 def send_message():
     message_text = request.form['message']
+    chat_id = request.form['chat_id']
     print(message_text)
+    print(chat_id)
     time.sleep(5)
     # GPT ye sorgu atma kısmını burada yap
     """
-  
     openai.api_key = "satın alcaz siteden oluşturcaz"
 
     response = openai.Completion.create(
@@ -69,8 +69,6 @@ def send_message():
     message = response.choices[0].text
     print(message)
     """
-
-
     response_message = "Bu bir örnek cevaptır."
     return jsonify({"message": response_message})
     
