@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %} Hakkımızda {% endblock %}  {% block content %}
+{% extends "home_base.html" %} {% block title %} Hakkımızda {% endblock %}  {% block content %}
 
 <main class="content">
   <div class="container p-0">
@@ -10,21 +10,25 @@
 
 					<div class="px-4 d-none d-md-block ">
 						<div class="d-flex align-items-center">
-							<div class="flex-grow-1">
-								<input type="text" class="form-control my-3" placeholder="Search...">
+							<div class="d-flex align-items-start my-4 btn btn-light" onclick="sendChatid('0')" >	
+								<img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.iconsdb.com%2Ficons%2Fdownload%2Forange%2Fchat-4-512.png&f=1&nofb=1&ipt=925250e5eb403d7d6de692e13d87040a7d69750eee4aa6aa9680b6bf6a956680&ipo=images" 
+									width="40" height="40" alt="">
+								<div class="mx-4 mt-2"> Yeni Konuşma</div>
 							</div>
+							<!-- <div class="flex-grow-1">
+								<input type="text" class="form-control my-3" placeholder="Search...">
+							</div> -->
 						</div>
 					</div>
 					{% for others in other_chats %}
-						<a href="#" class="list-group-item list-group-item-action border-0 bg-body-secondary">
-							<!-- <div class="badge bg-success float-right">5</div> -->
-							<div class="d-flex align-items-start">							
+						<div onclick="sendChatid('{{others.0}}')" class="list-group-item list-group-item-action border-0 bg-body-secondary chat-item">
+							<div class="d-flex align-items-start">                         
 								<div class="flex-grow-1 ml-3">
-									{{others.0}}
-									<div class="small"><span class="fas fa-circle chat-online"></span> {{others.1}}</div>
+									{{others.1}}
+									<div class="small"><span class="fas fa-circle chat-online"></span> {{others.2}}</div>
 								</div>
 							</div>
-						</a>
+						</div>
 					{% endfor %}
 
 					
@@ -118,6 +122,7 @@
 
 			var formData = new FormData();
 			formData.append('message', message);
+			formData.append('chat_id', '{{chat_id}}');
 
 			// AJAX ile asenkron POST isteği gönder
 			$.ajax({
@@ -142,9 +147,57 @@
 			// Mesaj gönderildikten sonra input alanını temizle
 			document.getElementById('message').value = '';
 		});
+	
+		/*document.addEventListener('DOMContentLoaded', function() {
+			
+			var chatItems = document.querySelectorAll('.chat-item');
+			chatItems.forEach(function(item) {
+				item.addEventListener('click', function(e) {
+					e.preventDefault();
+
+					// Chat ID'yi data-chat-id özelliğinden al
+					var chatId = this.getAttribute('data-chat-id');
+
+					var formData = new FormData();
+					formData.append('chat_id', chatId);
+
+					fetch('/', {
+						method: 'POST',
+						body: formData
+					}).then(response => {
+						if(response.ok) {
+							console.log('Chat ID başarıyla gönderildi:', chatId);
+						} else {
+							console.error('Sunucu tarafında bir hata oluştu.');
+						}
+					}).catch(error => {
+						console.error('İstek sırasında bir hata oluştu:', error);
+					});
+				});
+    		});
+		});*/
 	};
 
+	function sendChatid(chat_id){
 
+		var formData = new FormData();
+		formData.append('chat_id', chat_id);
+
+		// Fetch API kullanarak POST isteği yap
+		fetch('/', {
+			method: 'POST',
+			body: formData
+		}).then(response => {
+			if(response.ok) {
+				console.log('Chat ID başarıyla gönderildi:', chatId);
+				// İsteğin başarılı olduğunu belirten bir mesaj göster veya kullanıcıyı yeni bir sayfaya yönlendir
+			} else {
+				console.error('Sunucu tarafında bir hata oluştu.');
+			}
+		}).catch(error => {
+			console.error('İstek sırasında bir hata oluştu:', error);
+		});
+	}
 	
 	function addMessageToChatAI(message) {
 		var chatMessage = `<div class="chat-message-left pb-4">

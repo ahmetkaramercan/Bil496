@@ -1,0 +1,44 @@
+{% extends "A_base.html" %} {% block title %}Login{% endblock %} {% block content
+  %}
+  
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-sm-4"></div>
+  
+      <div class="col-sm-4">
+        <div class="text-center">
+          <a href="#" style="font-size: 25px;" class="nav-link px-2 text-dark">my<span
+              style="font-weight: bold; font-size: 40px; color: orange;">ETÜ</span></a>
+        </div>
+        </br>
+        <form method="POST">
+          <h3 align="center">Login</h3>
+  
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Password" />
+          </div>
+          <br />
+  
+          <div class="text-center">
+            <button type="submit" class="btn btn-warning">Login</button>
+          </div>
+        </form>
+  
+        <div class="text-center mt-3"> 
+            <p style="font-size: 13px;">Hesabınız yok mu ?
+                <a href="http://127.0.0.1:5000/sign-up" style="font-size: 13px;">Kaydol</a>
+            </p>
+        </div>
+        
+        <div class="col-sm-4"></div>
+        <div class="mb-5"></div>
+      </div>
+    </div>
+  </div>
+  
+  {% endblock %}
