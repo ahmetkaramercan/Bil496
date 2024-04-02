@@ -1,6 +1,8 @@
 {% extends "home_base.html" %} {% block title %} Hakkımızda {% endblock %}  {% block content %}
 
-<main class="content">
+<main class="content my-5">
+	<br>
+
   <div class="container p-0">
 		<h1 class="h3 mb-3">CHATBOT AI</h1>
 
@@ -10,25 +12,26 @@
 
 					<div class="px-4 d-none d-md-block ">
 						<div class="d-flex align-items-center">
-							<div class="d-flex align-items-start my-4 btn btn-light" onclick="sendChatid('0')" >	
+
+							<a href="/chat/0" class="btn d-flex align-items-start my-4 btn-light">
 								<img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.iconsdb.com%2Ficons%2Fdownload%2Forange%2Fchat-4-512.png&f=1&nofb=1&ipt=925250e5eb403d7d6de692e13d87040a7d69750eee4aa6aa9680b6bf6a956680&ipo=images" 
 									width="40" height="40" alt="">
 								<div class="mx-4 mt-2"> Yeni Konuşma</div>
-							</div>
-							<!-- <div class="flex-grow-1">
-								<input type="text" class="form-control my-3" placeholder="Search...">
-							</div> -->
+							</a>
 						</div>
+						
 					</div>
 					{% for others in other_chats %}
-						<div onclick="sendChatid('{{others.0}}')" class="list-group-item list-group-item-action border-0 bg-body-secondary chat-item">
+												
+						<a href="/chat/{{others.0}}" class="btn btn-outline-dark list-group-item list-group-item-action border-0 bg-body-secondary chat-item">
+							<!-- onclick="sendChatid('{{others.0}}')" -->
 							<div class="d-flex align-items-start">                         
 								<div class="flex-grow-1 ml-3">
 									{{others.1}}
 									<div class="small"><span class="fas fa-circle chat-online"></span> {{others.2}}</div>
 								</div>
 							</div>
-						</div>
+						</a>
 					{% endfor %}
 
 					
@@ -68,7 +71,7 @@
 										</div>
 									</div>
 
-								{% else %}
+								{% elif chat.1|length  > 0%}
 									<div class="chat-message-right mb-4">
 										<div>
 											<img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle mr-1" alt="Chris Wood" width="40" height="40">
@@ -244,6 +247,7 @@
 			</div>
 		</div>
 	</div>
+	<br><br>
 </main>
 
 {% endblock %}

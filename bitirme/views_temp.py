@@ -28,59 +28,88 @@ def about():
 @login_required
 def home():
     print(current_user)
+    #chat_id = -1
     chat_history = ""
     other_chats = []
     all_chats = []
-    print("home: ilk giris id yok")
+    max_chat_id = 0
 
     all_chats = Chat.query.filter_by(user_id=current_user.id).all()
 
-    if len(all_chats) <1:  # hic chat yoksa
-        current_chat_id= createNewChat()
-        other_chats.append([current_chat_id, "New Chat", "Yeni bir chat oluştur"])
+    if request.method == 'POST': 
+        current_chat_id = request.form.get('chat_id')
+        print("Home sayfasına tekrar request atıldı Home chat_id :  " ,  current_chat_id)
 
-    else:   #find last chat history from all_chats which user id is current_user.id and date is max
-        last_chat = None
-        for chat in all_chats:
-            if last_chat == None:
-                last_chat = chat
-            elif chat.date > last_chat.date:      
-                last_chat = chat
-        if last_chat != None:
-            chat_history = last_chat.chat_history
-            current_chat_id = last_chat.id
+        """if str(current_chat_id) == str(0): # yeni chat olusturmak icin
+            print("current_chat_id in: " + current_chat_id)
+            other_chats.append([max_chat_id, "New Chat", "Yeni bir chat oluştur"]) #!!gerek var mı bu satıra db den çekmiyor mu zaten
+            current_chat_id = createNewChat()
+
+        else: # Chat id ye karsilik gelen chati bul
+            print("current_chat_id out: " + current_chat_id)
+            for chat in all_chats:
+                if str(chat.id) == str(current_chat_id):
+                    chat_history = chat.chat_history
+                    break
         
-        for chat in all_chats:
-            other_chats.append([chat.id, chat.baslik, chat.kisa_aciklama])  
+        for chat in all_chats: #other chatlari veri tabanından cek
+            other_chats.append([chat.id, chat.baslik, chat.kisa_aciklama])
+
+        chat_history = getChatHistoryFormat(chat_history)"""
+
+        return redirect(url_for('views.homeChat', chat_id = current_chat_id))
     
-    chat_history = getChatHistoryFormat(chat_history)
+    else: 
+        print("chat_id in home: yok")
+        if len(all_chats) <1:  # hic chat yoksa
+            other_chats.append([max_chat_id, "New Chat", "Yeni bir chat oluştur"])
+            current_chat_id= createNewChat()
 
-    return render_template("index.html", user=current_user, chat_id = current_chat_id, chats = chat_history, other_chats = other_chats)
+        else:
+            #find last chat history from all_chats which user id is current_user.id and date is max
+            last_chat = None
+            for chat in all_chats:
+                if last_chat == None:
+                    last_chat = chat
+                elif chat.date > last_chat.date:      
+                    last_chat = chat
+            if last_chat != None:
+                chat_history = last_chat.chat_history
+                current_chat_id = last_chat.id
+            
+            for chat in all_chats:
+                other_chats.append([chat.id, chat.baslik, chat.kisa_aciklama])  
+        
+        chat_history = getChatHistoryFormat(chat_history)
+    
+        return render_template("index.html", user=current_user, chat_id = current_chat_id, chats = chat_history, other_chats = other_chats)
 
 
 
-@views.route("/chat/<int:chat_id>", methods=['GET', 'POST'])
+@views.route("/chat", methods=['GET', 'POST'])
 @login_required
 def homeChat(chat_id):
     print(current_user)
-    print("Homechat chat_id: ", chat_id)
+    #chat_id = -1
     chat_history = ""
     other_chats = []
     all_chats = []
+    max_chat_id = 0
 
     all_chats = Chat.query.filter_by(user_id=current_user.id).all()
-    #chat_id o usera ait değilse home sf sine yönlendirme yap
-    chat_id = chat_id
 
-    if str(chat_id) == str(0): # yeni chat olusturmak icin
-        print("chat_id in: " , chat_id)
-        chat_id = createNewChat()
-        other_chats.append([chat_id, "New Chat", "Yeni bir chat oluştur"]) #!!gerek var mı bu satıra db den çekmiyor mu zaten
+    current_chat_id = chat_id
+    print("Home sayfasına tekrar request atıldı Home chat_id :  " ,  current_chat_id)
+
+    if str(current_chat_id) == str(0): # yeni chat olusturmak icin
+        print("current_chat_id in: " , current_chat_id)
+        other_chats.append([max_chat_id, "New Chat", "Yeni bir chat oluştur"]) #!!gerek var mı bu satıra db den çekmiyor mu zaten
+        current_chat_id = createNewChat()
 
     else: # Chat id ye karsilik gelen chati bul
-        print("chat_id out: " , chat_id)
+        print("current_chat_id out: " , current_chat_id)
         for chat in all_chats:
-            if str(chat.id) == str(chat_id):
+            if str(chat.id) == str(current_chat_id):
                 chat_history = chat.chat_history
                 break
     
@@ -89,7 +118,7 @@ def homeChat(chat_id):
 
     chat_history = getChatHistoryFormat(chat_history)
 
-    return render_template("index.html", user=current_user, chat_id = chat_id, chats = chat_history, other_chats = other_chats)
+    return render_template("index.html", user=current_user, chat_id = current_chat_id, chats = chat_history, other_chats = other_chats)
 
 
 @views.route("/send_message", methods=['POST'])
@@ -128,8 +157,8 @@ def send_message():
             ],
             model="gpt-3.5-turbo"
         )
-        baslik_gpt = chat_completion.choices[0].message.content
         chat.baslik = baslik_gpt  # `baslik` özelliğini yeni değerle güncelleyin
+        baslik_gpt = chat_completion.choices[0].message.content
         print("baslik: " + baslik_gpt)
 
     chat.chat_history += message_text + " /c " + response_message + " /c "
