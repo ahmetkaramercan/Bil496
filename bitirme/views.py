@@ -7,7 +7,7 @@ import os
 from . import db
 import secrets
 import datetime
-#from PIL import Image #fotoğrafları gösterirken lazım
+from PIL import Image #fotoğrafları gösterirken lazım
 #import openai
 from openai import OpenAI
 
@@ -22,6 +22,51 @@ views = Blueprint('views', __name__)
 @login_required
 def about():
     return render_template("about.html", user=current_user)
+
+
+@views.route("/hesap_ayarlari", methods=['GET', 'POST'])
+@login_required
+def hesap_ayarlari():
+    if request.method == 'POST':
+
+        email = request.form.get('email')
+        if not email: 
+            email = current_user.email
+        isim = request.form.get('firstName')
+        if not isim: 
+            isim = current_user.first_name
+        soy_isim = request.form.get('lastName')
+        if not soy_isim:
+            soy_isim = current_user.last_name
+
+        password1 = request.form.get('password1')
+        password2 = request.form.get('password2')
+        
+        user = User.query.filter_by(email=email).first()
+        
+        if user and user.id != current_user.id:
+            flash('Email already exists.', category='error')
+        elif len(email) < 4:
+            flash('Email must be greater than 3 characters.', category='error')
+        elif len(isim) < 2:
+            flash('First name must be greater than 1 character.', category='error')
+        elif len(soy_isim) < 2:
+            flash('Last name must be greater than 1 character.', category='error')
+        elif len(password1) > 2 and password1 != password2:
+                flash('Passwords don\'t match.', category='error')
+        elif len(password1) < 7:
+            flash('Password must be at least 7 characters.', category='error')
+        else:
+            current_user.first_name = isim
+            current_user.last_name = soy_isim
+            current_user.email = email
+            if len(password1) > 2 and password1 == password2:
+                current_user.password = generate_password_hash(password1, method='pbkdf2:sha256')
+            db.session.commit()
+            flash('Hesap ayarları güncellendi!', category='success')
+            return redirect(url_for("views.hesap_ayarlari", user = current_user))
+
+    return render_template("hesap_ayarlari.html", user = current_user)
 
 
 @views.route("/", methods=['GET', 'POST'])
@@ -178,4 +223,64 @@ def maxChatId():
         file.close()
 
     return max_chat_id
+
+
+
+
+
+
+
+
+
+
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg'}
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def save_picture(form_picture):
+    random_hex = secrets.token_hex(8) #dosya isimlerinde karisiklik yasanmamasi icin
+    _, f_ext = os.path.splitext(form_picture.filename) #dosyanin extensionunu alıyor yani png jpg gibi
+    picture_fn = random_hex + f_ext #artik resim dosyasinin ismi unique ve extensionu da var misal 1865csd5f8sd.jpg gibisinden
+    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn) # image icin roottan başlayan path olusturuyor
+
+    output_size = (250, 250)  #burasi ve asagisi resmi resizelayabilmek icin var bunun icin package called PILLOW kullanıyoruz
+    i = Image.open(form_picture)  #pip install PIL falan yapmak gerekiyor yani
+    i.thumbnail(output_size)
+    i.save(picture_path) #pathe resize edilmis resmi kaydediyor yani static/profilepics klasörüne
+
+    return picture_fn  #resim dosyasinin ismini dönüyor
+
+def save_picture2(form_picture):
+    random_hex = secrets.token_hex(8) #dosya isimlerinde karisiklik yasanmamasi icin
+    _, f_ext = os.path.splitext(form_picture.filename) #dosyanin extensionunu alıyor yani png jpg gibi
+    picture_fn = random_hex + f_ext #artik resim dosyasinin ismi unique ve extensionu da var misal 1865csd5f8sd.jpg gibisinden
+    picture_path = os.path.join(app.root_path, 'static/kurs_pics', picture_fn) # image icin roottan başlayan path olusturuyor
+
+    output_size = (125, 125)  #burasi ve asagisi resmi resizelayabilmek icin var bunun icin package called PILLOW kullanıyoruz
+    i = Image.open(form_picture)  #pip install PIL 
+    i.thumbnail(output_size)
+    i.save(picture_path) #pathe resize edilmis resmi kaydediyor yani static/kurs_pics klasörüne
+
+    return picture_fn  #resim dosyasinin ismini dönüyor
+
+@views.route('/foto_ayarlari', methods=['GET', 'POST'])
+@login_required
+def update_foto():
+    if request.method == 'POST':
+        looking_for = request.form.get('arama')
+        if looking_for:
+            return redirect(url_for('views.arama', looking_for = looking_for))
+        img = request.files['image']
+        if img.filename == '':
+            flash('Profil resmi için dosya seçilmedi!', category ='error')
+            return redirect(request.url)
+        if img and allowed_file(img.filename):
+            filename = save_picture(img)
+            current_user.image_file = filename
+            db.session.commit()
+            flash('Profil resmi değiştirildi!', category ='success')
+            return render_template("foto_ayarlari.html", user = current_user)
+    return render_template("foto_ayarlari.html", user = current_user)
     
