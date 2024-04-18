@@ -9,7 +9,17 @@ import secrets
 import datetime
 from PIL import Image #fotoğrafları gösterirken lazım
 #import openai
+
 from openai import OpenAI
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import torch
+import heapq
+import numpy as np
+import torch.nn.functional as F
+
+model_path = "model"
+tokenizer = AutoTokenizer.from_pretrained(model_path)
+model = AutoModelForSequenceClassification.from_pretrained(model_path)
 
 
 client = OpenAI(
@@ -82,7 +92,7 @@ def home():
 
     if len(all_chats) <1:  # hic chat yoksa
         current_chat_id= createNewChat()
-        other_chats.append([current_chat_id, "New Chat", "Yeni bir chat oluştur"])
+        other_chats.append([current_chat_id, "New Chat", "Waiting for detailed symptoms."])
 
     else:   #find last chat history from all_chats which user id is current_user.id and date is max
         last_chat = None
@@ -120,7 +130,7 @@ def homeChat(chat_id):
     if str(chat_id) == str(0): # yeni chat olusturmak icin
         print("chat_id in: " , chat_id)
         chat_id = createNewChat()
-        other_chats.append([chat_id, "New Chat", "Yeni bir chat oluştur"]) #!!gerek var mı bu satıra db den çekmiyor mu zaten
+        other_chats.append([chat_id, "New Chat", "Waiting for detailed symptoms."]) #!!gerek var mı bu satıra db den çekmiyor mu zaten
 
     else: # Chat id ye karsilik gelen chati bul
         print("chat_id out: " , chat_id)
@@ -142,8 +152,10 @@ def homeChat(chat_id):
 def send_message():
     message_text = request.form['message']
     chat_id = request.form['chat_id']
-   
-    prompt = message_text
+    
+    
+    # Obtain all Symptoms from the message with GPT-3
+    prompt = "' "+message_text+" ' If there are symptoms related to a disease in this message, list them by separating them with commas. Provide them to me in this format only: 'Symptoms: ....,....,'. If the message does not contain any symptoms, just write 'No' to me."
     chat_completion = client.chat.completions.create(
         messages = [
             {
@@ -153,29 +165,66 @@ def send_message():
         ],
         model="gpt-3.5-turbo"
     )
+    symptoms = message_text
+    print("Symptoms: ", symptoms)
+    print("chat_completion.choices[0].message.content:", chat_completion.choices[0].message.content)
+    
+    # Predict the disease with the symptoms with custom model
+    inputs = tokenizer(symptoms, return_tensors="pt")
+    inputs.to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+    with torch.no_grad():
+        outputs = model(**inputs)
 
-    response_message = chat_completion.choices[0].message.content
+    predicted_label_id = torch.argmax(outputs.logits[0]).item()
+    predicted_disease = model.config.id2label[predicted_label_id]
+
+    print("Predicted label:", predicted_disease)
     print("chat_id: " + chat_id)
+    
+    response_message =" "
+    
+    probabilities = F.softmax(outputs.logits, dim=1)
+    top_k = 3
+    probs = probabilities.cpu().numpy()
+    top_k_idx = np.argsort(probs[0])[-top_k:][::-1]
+    for i in range(top_k):
+        print(f"{model.config.id2label[top_k_idx[i]]}: {probs[0][top_k_idx[i]]*100:.2f}%")
+    
+    # if predicted_disease contains "No", print "No disease"
+    
+    if "No" in chat_completion.choices[0].message.content:
+        print("No disease")
+        response_message = "I am AI doctor. Give me information about the symptoms of the disease."
+    else:
+        print("probs[0][top_k_idx[0]: ", probs[0][top_k_idx[0]])
+        if probs[0][top_k_idx[0]] > 0.5:
+            prompt = "' " + model.config.id2label[top_k_idx[0]] + " ' give me traitments for this disease. and return to me in this format: 'Until your appointment with the doctor, you can apply the following treatments: ...'."
+            chat_completion = client.chat.completions.create(
+                messages = [
+                    {
+                        "role":"user",
+                     "content":prompt
+                     },    
+                ],
+                model="gpt-3.5-turbo"
+            )
+            response_message = "Predicted Disease: " + model.config.id2label[top_k_idx[0]] + " <br> Probability: %" + f"{probs[0][top_k_idx[0]]*100:.2f}" + " <br> " + chat_completion.choices[0].message.content
+        else:
+            response_message = "Predicted Disease: " + model.config.id2label[top_k_idx[0]] + " " + f"{probs[0][top_k_idx[0]]*100:.2f}%" + " " + model.config.id2label[top_k_idx[1]] + " " + f"{probs[0][top_k_idx[1]]*100:.2f}%" + " " + model.config.id2label[top_k_idx[2]] + " " + f"{probs[0][top_k_idx[2]]*100:.2f}%"+ "I can not predict the disease with high probability. Please provide more information about the symptoms of the disease with privious symptoms."
+            
 
+    
+    
     #update baslik ve chat_history 
     chat = Chat.query.filter_by(id=chat_id).first()
     if chat is None:
         return jsonify({"message": "Chat not found"})
     
-    if chat.baslik == "New Chat": # baslik yoksa baslik olustur
-        prompt = "' "+ message_text + " ' yazısından 2 kelimeli başlık oluştur"
-        chat_completion = client.chat.completions.create(
-            messages = [
-                {
-                    "role":"user",
-                "content":prompt
-                },    
-            ],
-            model="gpt-3.5-turbo"
-        )
-        baslik_gpt = chat_completion.choices[0].message.content
-        chat.baslik = baslik_gpt  # `baslik` özelliğini yeni değerle güncelleyin
-        print("baslik: " + baslik_gpt)
+    if chat.baslik == "New Chat" and (probs[0][top_k_idx[0]] > 0.5): # baslik yoksa baslik olustur
+        baslik = model.config.id2label[top_k_idx[0]]
+        chat.baslik = baslik  # `baslik` özelliğini yeni değerle güncelleyin
+        print("baslik: " + baslik)
+        chat.kisa_aciklama = "Get well soon!"
 
     chat.chat_history += message_text + " /c " + response_message + " /c "
     db.session.commit()
@@ -187,7 +236,7 @@ def createNewChat ():
     date = datetime.datetime.now()   
     chat_history = "selam nasılsın ? Nasıl yardımcı olabilirim ? /c "
     max_chat_id = maxChatId()
-    new_kurs = Chat(id=max_chat_id,user_id=current_user.id, baslik = "New Chat", date= date, kisa_aciklama = "Yeni bir chat oluştur", chat_history = chat_history.replace("'", "''"))
+    new_kurs = Chat(id=max_chat_id,user_id=current_user.id, baslik = "New Chat", date= date, kisa_aciklama = "Waiting for detailed symptoms.", chat_history = chat_history.replace("'", "''"))
     db.session.add(new_kurs)
     db.session.commit()
     return max_chat_id
@@ -214,11 +263,11 @@ def getChatHistoryFormat(str_chat_history):
 #yalnış çalışıyor str gibi ekliyor
 #yalnış çalışıyor str gibi ekliyor
 def maxChatId():
-    with open("/Users/ahmet/ahmet_belgeler/bitirme/Bil496/Bil496/bitirme/max.txt", "r") as file:
+    with open("bitirme/max.txt", "r") as file:
         max_chat_id = int(file.read())
         file.close()
     #write to max.txt to update max chat id
-    with open("/Users/ahmet/ahmet_belgeler/bitirme/Bil496/Bil496/bitirme/max.txt", "w") as file:
+    with open("bitirme/max.txt", "w") as file:
         file.write(str(max_chat_id + 1))
         file.close()
 

@@ -198,11 +198,11 @@ def getChatHistoryFormat(str_chat_history):
 #yalnış çalışıyor str gibi ekliyor
 #yalnış çalışıyor str gibi ekliyor
 def maxChatId():
-    with open("/Users/ahmet/ahmet_belgeler/bitirme/Bil496/Bil496/bitirme/max.txt", "r") as file:
+    with open("bitirme/max.txt", "r") as file:
         max_chat_id = int(file.read())
         file.close()
     #write to max.txt to update max chat id
-    with open("/Users/ahmet/ahmet_belgeler/bitirme/Bil496/Bil496/bitirme/max.txt", "w") as file:
+    with open("bitirme/max.txt", "w") as file:
         file.write(str(max_chat_id + 1))
         file.close()
 
