@@ -7,7 +7,7 @@ Yazarlar:
   *Kerem Yalçınkaya
   *Ahmet Karamercan
   
-Dosya açıklamaları:
+Dosya açıklamaları: \n
   model_train: Fine-Tune DiaBert Modelinin eğitimine ait dosyaları içerir. Model_rain_2.ipynb dosyası drive linkinde bulunan modelin son halini oluşturan dosyadır.
   model: Eğitilmiş modele ait dosyaları içeren klasördür. Drive linkinde bulunan model bu dosyaya koyulmalıdır.
   instance: Database'i içeren dosyadır. İçindeki db uzantılı dosya silinerek yeni bir database oluşturulabilir.
