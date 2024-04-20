@@ -4,7 +4,7 @@
 	<br>
 
   <div class="container p-0">
-		<h1 class="h3 mb-3">CHATBOT AI</h1>
+		<h1 class="h3 mb-3">CHATDOCTOR AI</h1>
 
 		<div class="card">
 			<div class="row g-0">
@@ -13,25 +13,52 @@
 					<div class="px-4 d-none d-md-block ">
 						<div class="d-flex align-items-center">
 
-							<a href="/chat/0" class="btn d-flex align-items-start my-4 btn-light">
+							<a href="/chat/0" class="btn d-flex align-items-start my-4 " style="background-color: rgb(230, 230, 230)">
 								<img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.iconsdb.com%2Ficons%2Fdownload%2Forange%2Fchat-4-512.png&f=1&nofb=1&ipt=925250e5eb403d7d6de692e13d87040a7d69750eee4aa6aa9680b6bf6a956680&ipo=images" 
 									width="40" height="40" alt="">
-								<div class="mx-4 mt-2"> Yeni Konuşma</div>
+								<div class="mx-4 mt-2"> New Chat</div>
 							</a>
 						</div>
 						
 					</div>
 					{% for others in other_chats %}
-												
-						<a href="/chat/{{others.0}}" class="btn btn-outline-dark list-group-item list-group-item-action border-0 bg-body-secondary chat-item">
-							<!-- onclick="sendChatid('{{others.0}}')" -->
-							<div class="d-flex align-items-start">                         
-								<div class="flex-grow-1 ml-3">
-									{{others.1}}
-									<div class="small"><span class="fas fa-circle chat-online"></span> {{others.2}}</div>
+
+						{% if others.0 == chat_id %}
+							<div class="d-flex align-items-start" style="background-color: rgb(230, 230, 230);">  
+								<a href="/chat/{{others.0}}" class="btn btn-outline-dark list-group-item list-group-item-action border-0  chat-item" style="background-color: rgb(230, 230, 230);">			
+									<div class="flex-grow-1 ml-3">
+										{{others.1}}
+										<div class="small"><span class="fas fa-circle chat-online"></span> {{others.2}}</div>
+									</div>
+								</a>
+								<div>
+									<a href="/chat/-{{others.0}}" class="btn btn-outline-dark list-group-item list-group-item-action border-0 chat-item" style="background-color: rgb(230, 230, 230);">			
+										<div class = "btn "><img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.iconsdb.com%2Ficons%2Fpreview%2Forange%2Ftrash-2-xxl.png&f=1&nofb=1&ipt=9650fcbfe6c5730bd3c756048a25b361c82f7bd9942a201662104da3a67f707e&ipo=images" 
+											width="20" height="20" alt="">
+										</div>
+									</a>
 								</div>
 							</div>
-						</a>
+
+
+						{% else %}
+							<div class="d-flex align-items-start">  
+								<a href="/chat/{{others.0}}" class="btn btn-outline-dark list-group-item list-group-item-action border-0 bg-body-secondary chat-item">			
+									<div class="flex-grow-1 ml-3">
+										{{others.1}}
+										<div class="small"><span class="fas fa-circle chat-online"></span> {{others.2}}</div>
+									</div>
+								</a>
+								<div>
+									<a href="/chat/-{{others.0}}" class="btn btn-outline-dark list-group-item list-group-item-action border-0 bg-body-secondary chat-item">			
+										<div class = "btn "><img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.iconsdb.com%2Ficons%2Fpreview%2Forange%2Ftrash-2-xxl.png&f=1&nofb=1&ipt=9650fcbfe6c5730bd3c756048a25b361c82f7bd9942a201662104da3a67f707e&ipo=images" 
+											width="20" height="20" alt="">
+										</div>
+									</a>
+								</div>
+							</div>
+						{% endif %}
+						
 					{% endfor %}
 
 					
@@ -46,8 +73,8 @@
 								<img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimg.freepik.com%2Fvector-premium%2Fdoctor-robot-lindo-bata-blanca-juego-medicina-tecnologias-futuro-tratamiento-hospitalario-personaje_124715-101.jpg%3Fw%3D2000&f=1&nofb=1&ipt=5b5135a33b2272c54caa3405bd7267e4874f06da5d4a61425b71d8ca763d989a&ipo=images" class="rounded-circle mr-1" alt="Sharon Lessman" width="40" height="40">
 							</div>
 							<div class="flex-grow-1 pl-3 mx-3">
-								<strong>AI Chatbot</strong>
-								<div class="text-muted small"><em>Typing...</em></div>
+								<strong>AI ChatDoctor</strong>
+								<div class="text-muted small" id="typing"><em>Online</em></div>
 							</div>
 							<div>
 								<button class="btn btn-light border btn-lg px-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal feather-lg"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
@@ -63,10 +90,10 @@
 									<div class="chat-message-left pb-4">
 										<div>
 											<img src="../static/profile_pics/ornek.png" class="rounded-circle mr-1" alt="Sharon Lessman" width="40" height="40">
-											<div class="text-muted small text-nowrap mt-2">2:34 am</div>
+											<div class="text-muted small text-nowrap mt-2"></div>
 										</div>
-										<div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
-											<div class="font-weight-bold mb-1">AI bot</div>
+										<div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3" >
+											<div class="font-weight-bold mb-1">AI Doctor</div>
 											{{chat.1}}
 										</div>
 									</div>
@@ -75,7 +102,7 @@
 									<div class="chat-message-right mb-4">
 										<div>
 											<img src="https://bootdey.com/img/Content/avatar/avatar1.png" class="rounded-circle mr-1" alt="Chris Wood" width="40" height="40">
-											<div class="text-muted small text-nowrap mt-2">2:35 am</div>
+											<div class="text-muted small text-nowrap mt-2"></div>
 										</div>
 										<div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
 											<div class="font-weight-bold mb-1">You</div>
@@ -97,16 +124,7 @@
 						  </form>
 						</div>
 					</div>
-
-
-
-					<!-- <script>
-					window.onload = function() {
-						var chatBox = document.querySelector('.chat-messages');
-						chatBox.scrollTop = chatBox.scrollHeight;
-					};
-					</script> -->
-
+					<br>
 
 <script>
 	window.onload = function() {
@@ -127,6 +145,7 @@
 			formData.append('message', message);
 			formData.append('chat_id', '{{chat_id}}');
 
+			var typing = document.getElementById("typing");
 			// AJAX ile asenkron POST isteği gönder
 			$.ajax({
 				url: "/send_message",
@@ -150,35 +169,6 @@
 			// Mesaj gönderildikten sonra input alanını temizle
 			document.getElementById('message').value = '';
 		});
-	
-		/*document.addEventListener('DOMContentLoaded', function() {
-			
-			var chatItems = document.querySelectorAll('.chat-item');
-			chatItems.forEach(function(item) {
-				item.addEventListener('click', function(e) {
-					e.preventDefault();
-
-					// Chat ID'yi data-chat-id özelliğinden al
-					var chatId = this.getAttribute('data-chat-id');
-
-					var formData = new FormData();
-					formData.append('chat_id', chatId);
-
-					fetch('/', {
-						method: 'POST',
-						body: formData
-					}).then(response => {
-						if(response.ok) {
-							console.log('Chat ID başarıyla gönderildi:', chatId);
-						} else {
-							console.error('Sunucu tarafında bir hata oluştu.');
-						}
-					}).catch(error => {
-						console.error('İstek sırasında bir hata oluştu:', error);
-					});
-				});
-    		});
-		});*/
 	};
 
 	function sendChatid(chat_id){
@@ -206,10 +196,10 @@
 		var chatMessage = `<div class="chat-message-left pb-4">
 			<div>
 				<img src="../static/profile_pics/ornek.png" class="rounded-circle mr-1" alt="Sharon Lessman" width="40" height="40">
-				<div class="text-muted small text-nowrap mt-2">2:34 am</div>
+				<div class="text-muted small text-nowrap mt-2"></div>
 			</div>
 			<div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
-				<div class="font-weight-bold mb-1">AI bot</div>
+				<div class="font-weight-bold mb-1">AI Doctor</div>
 				${message}
 			</div>
 		</div>`;
@@ -218,6 +208,9 @@
 		var chatContainer = document.getElementById('chat-messages');
 		chatContainer.innerHTML += chatMessage;
 		chatContainer.scrollTop = chatContainer.scrollHeight;
+
+		var typing = document.getElementById("typing");
+		typing.innerHTML = "Online"
 	}
 
 
@@ -237,6 +230,9 @@
 		var chatContainer = document.getElementById('chat-messages');
 		chatContainer.innerHTML += chatMessage;
 		chatContainer.scrollTop = chatContainer.scrollHeight;
+
+		var typing = document.getElementById("typing");
+		typing.innerHTML = "Typing..."
 	}
 
 

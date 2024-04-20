@@ -27,7 +27,7 @@
 
                 <a href="/" style="font-size: 25px;"
                     class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">ETÜ<span
-                    style="font-weight: bold; font-size: 35px;" class="text-warning">SAĞLIK</span></a>
+                    style="font-weight: bold; font-size: 35px;" class="text-warning">HEALTH</span></a>
                         
                 <div class="ml-5 px-3 d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
                     
@@ -35,9 +35,9 @@
 
                 
                 <ul class=" text-warning nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                    <li><a href="/"  style="font-size: 20px;" class="nav-link nav-item px-4 text-white">Ana Sayfa</a></li>
+                    <li><a href="/"  style="font-size: 20px;" class="nav-link nav-item px-4 text-white">Main Page</a></li>
 
-                    <li><a href="/about"  style="font-size: 20px;" class="nav-link nav-item px-4 text-warning">Hakkımızda</a></li>
+                    <li><a href="/about"  style="font-size: 20px;" class="nav-link nav-item px-4 text-warning">About Us</a></li>
 
                 </ul>
                 
@@ -57,34 +57,17 @@
                             <hr class="dropdown-divider">
                         </li>
             
-                        <li><a class="dropdown-item" href="/hesap_ayarlari">Ayarlar</a></li>
+                        <li><a class="dropdown-item" href="/account_settings">Settings</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><a class="dropdown-item nav-link" style="color:red;" id="logout" href="/logout">Oturumu Kapat</a></li>
+                        <li><a class="dropdown-item nav-link" style="color:red;" id="logout" href="/logout">Sign Out</a></li>
                     </ul>
                 </div>
             </div>
         </div>
     </header>
-
-    {% with messages = get_flashed_messages(with_categories=true) %} {% if
-        messages %} {% for category, message in messages %} {% if category ==
-        'error' %}
-        <div class="alert alert-danger alter-dismissable fade show" role="alert">
-            {{ message }}
-            <button type="button" class="close" data-dismiss="alert">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        {% else %}
-        <div class="alert alert-success alter-dismissable fade show" role="alert">
-            {{ message }}
-            <button type="button" class="close" data-dismiss="alert">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        {% endif %} {% endfor %} {% endif %} {% endwith %}
+    <br>
 
     {% block content %}{% endblock %}
 
@@ -94,7 +77,7 @@
             <p class="float-end"><a class="text-warning" href="#">Back to top</a></p>
             <a href="/" style="font-size: 25px;"
                 class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">ETÜ<span
-                    style="font-weight: bold; font-size: 35px;" class="text-warning">SAĞLIK</span></a>
+                    style="font-weight: bold; font-size: 35px;" class="text-warning">HEALTH</span></a>
             <p class="text-white">&copy; 2003–2024 TOBB ETÜ, Inc.</p>
         </footer>
     </div>

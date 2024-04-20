@@ -8,7 +8,6 @@ from . import db
 import secrets
 import datetime
 from PIL import Image #fotoğrafları gösterirken lazım
-#import openai
 
 from openai import OpenAI
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
@@ -34,9 +33,9 @@ def about():
     return render_template("about.html", user=current_user)
 
 
-@views.route("/hesap_ayarlari", methods=['GET', 'POST'])
+@views.route("/account_settings", methods=['GET', 'POST'])
 @login_required
-def hesap_ayarlari():
+def account_settings():
     if request.method == 'POST':
 
         email = request.form.get('email')
@@ -74,16 +73,44 @@ def hesap_ayarlari():
                 current_user.password = generate_password_hash(password1, method='pbkdf2:sha256')
             db.session.commit()
             flash('Hesap ayarları güncellendi!', category='success')
-            return redirect(url_for("views.hesap_ayarlari", user = current_user))
+            return redirect(url_for("views.account_settings", user = current_user))
 
-    return render_template("hesap_ayarlari.html", user = current_user)
+    return render_template("account_settings.html", user = current_user)
+
+
+
+@views.route("/delete_account", methods=['GET', 'POST'])
+@login_required
+def delete_account():
+    if request.method == 'POST':
+
+        password1 = request.form.get('password1')
+        password2 = request.form.get('password2')
+
+        if len(password1) > 2 and password1 != password2:
+            flash('Passwords don\'t match.', category='error')
+    
+        if check_password_hash(current_user.password, password1):
+            
+            Chat.query.filter_by(user_id=current_user.id).delete()
+        
+            user_to_delete = User.query.get(current_user.id)  # current_user'ın veritabanı modeline dönüşümü
+            if user_to_delete:
+                db.session.delete(user_to_delete)
+            db.session.commit()
+            #current_user.logout_user()
+            return redirect(url_for('auth.logout'))
+        
+            #return redirect(url_for("auth.login"))
+
+    return render_template("delete_account.html", user = current_user)
 
 
 @views.route("/", methods=['GET', 'POST'])
 @login_required
 def home():
     print(current_user)
-    chat_history = ""
+    chat_history = "Wolcome to AI Doctor! I am waiting for your symptoms. /c "
     other_chats = []
     all_chats = []
     print("home: ilk giris id yok")
@@ -114,21 +141,46 @@ def home():
 
 
 
-@views.route("/chat/<int:chat_id>", methods=['GET', 'POST'])
+@views.route("/chat/<chat_id>", methods=['GET', 'POST'])
 @login_required
 def homeChat(chat_id):
     print(current_user)
     print("Homechat chat_id: ", chat_id)
-    chat_history = ""
+
+    chat_history = "Wolcome to AI Doctor! I am waiting for your symptoms. /c "
     other_chats = []
     all_chats = []
+    deleteChat = False
+    if chat_id[0] == "-":
+        chat_id = int(chat_id[1:])
+        deleteChat = True
+        chat_to_delete = Chat.query.get(chat_id)
+        if chat_to_delete and chat_to_delete.user_id == current_user.id:
+            db.session.delete(chat_to_delete)
+            db.session.commit()
+    else:
+        chat_id = int(chat_id)
+    print("chat_id: " , chat_id)
 
     all_chats = Chat.query.filter_by(user_id=current_user.id).all()
-    #chat_id o usera ait değilse home sf sine yönlendirme yap
     chat_id = chat_id
 
-    if str(chat_id) == str(0): # yeni chat olusturmak icin
-        print("chat_id in: " , chat_id)
+
+    if deleteChat:
+        
+
+        last_chat = None
+        for chat in all_chats:
+            if last_chat == None:
+                last_chat = chat
+            elif chat.date > last_chat.date:      
+                last_chat = chat
+        if last_chat != None:
+            chat_history = last_chat.chat_history
+            chat_id = last_chat.id
+        print("-----------------------" , chat_id)  
+        
+    elif str(chat_id) == str(0): # yeni chat olusturmak icin
         chat_id = createNewChat()
         other_chats.append([chat_id, "New Chat", "Waiting for detailed symptoms."]) #!!gerek var mı bu satıra db den çekmiyor mu zaten
 
@@ -210,7 +262,7 @@ def send_message():
             )
             response_message = "Predicted Disease: " + model.config.id2label[top_k_idx[0]] + " <br> Probability: %" + f"{probs[0][top_k_idx[0]]*100:.2f}" + " <br> " + chat_completion.choices[0].message.content
         else:
-            response_message = "Predicted Disease: " + model.config.id2label[top_k_idx[0]] + " " + f"{probs[0][top_k_idx[0]]*100:.2f}%" + " " + model.config.id2label[top_k_idx[1]] + " " + f"{probs[0][top_k_idx[1]]*100:.2f}%" + " " + model.config.id2label[top_k_idx[2]] + " " + f"{probs[0][top_k_idx[2]]*100:.2f}%"+ "I can not predict the disease with high probability. Please provide more information about the symptoms of the disease with privious symptoms."
+            response_message = "Predicted Diseases: " + model.config.id2label[top_k_idx[0]] + " " + f"{probs[0][top_k_idx[0]]*100:.2f}%" + " " + model.config.id2label[top_k_idx[1]] + " " + f"{probs[0][top_k_idx[1]]*100:.2f}%" + " " + model.config.id2label[top_k_idx[2]] + " " + f"{probs[0][top_k_idx[2]]*100:.2f}%"+ ". I can not predict the disease with high probability. Please provide more information about the symptoms of the disease with privious symptoms."
             
 
     
@@ -226,7 +278,7 @@ def send_message():
         print("baslik: " + baslik)
         chat.kisa_aciklama = "Get well soon!"
 
-    chat.chat_history += message_text + " /c " + response_message + " /c "
+    chat.chat_history += message_text + " /c " + response_message.replace("<br>","\n\n") + " /c "
     db.session.commit()
     
     return jsonify({"message": response_message})
@@ -234,7 +286,7 @@ def send_message():
 
 def createNewChat ():
     date = datetime.datetime.now()   
-    chat_history = "selam nasılsın ? Nasıl yardımcı olabilirim ? /c "
+    chat_history = "Wolcome to AI Doctor! I am waiting for your symptoms. /c "
     max_chat_id = maxChatId()
     new_kurs = Chat(id=max_chat_id,user_id=current_user.id, baslik = "New Chat", date= date, kisa_aciklama = "Waiting for detailed symptoms.", chat_history = chat_history.replace("'", "''"))
     db.session.add(new_kurs)
@@ -255,13 +307,6 @@ def getChatHistoryFormat(str_chat_history):
 
     return chat_history
 
-
-#yalnış çalışıyor str gibi ekliyor
-#yalnış çalışıyor str gibi ekliyor
-#yalnış çalışıyor str gibi ekliyor
-#yalnış çalışıyor str gibi ekliyor
-#yalnış çalışıyor str gibi ekliyor
-#yalnış çalışıyor str gibi ekliyor
 def maxChatId():
     with open("bitirme/max.txt", "r") as file:
         max_chat_id = int(file.read())
@@ -314,7 +359,7 @@ def save_picture2(form_picture):
 
     return picture_fn  #resim dosyasinin ismini dönüyor
 
-@views.route('/foto_ayarlari', methods=['GET', 'POST'])
+@views.route('/foto_settings', methods=['GET', 'POST'])
 @login_required
 def update_foto():
     if request.method == 'POST':
@@ -330,6 +375,6 @@ def update_foto():
             current_user.image_file = filename
             db.session.commit()
             flash('Profil resmi değiştirildi!', category ='success')
-            return render_template("foto_ayarlari.html", user = current_user)
-    return render_template("foto_ayarlari.html", user = current_user)
+            return render_template("foto_settings.html", user = current_user)
+    return render_template("foto_settings.html", user = current_user)
     
