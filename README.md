@@ -18,7 +18,7 @@
 **Fine-Tuned DiaBert Model:**
 [Drive Link](https://drive.google.com/drive/folders/1TVATi7F5xFPo0ArAgDRkBsT5Wa0cJiTQ?usp=drive_link)
 
-**Proje Raporu**
+**Proje Raporu:**
 [Drive Link](https://drive.google.com/drive/folders/1PgrDsIXx2luJBk_dmIsb7xBUgTcWPj21?usp=drive_link)
 
 **Notlar:**
